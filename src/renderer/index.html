@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Tools - Professional PDF Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-file-pdf"></i>
+                <h1>PDF Tools</h1>
+            </div>
+            <nav class="nav">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#tools" class="nav-link">Tools</a>
+                <a href="#about" class="nav-link">About</a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero Section -->
+            <section id="home" class="hero">
+                <div class="hero-content">
+                    <h2>Every tool you need to work with PDFs in one place by Phirun</h2>
+                    <p>Convert, merge, split, compress and edit PDF files for free</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="scrollToTools()">
+                            <i class="fas fa-arrow-down"></i>
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tools Grid -->
+            <section id="tools" class="tools-section">
+                <h2>PDF Tools</h2>
+                <div class="tools-grid">
+                    <!-- Merge PDF -->
+                    <div class="tool-card" onclick="selectTool('merge')">
+                        <div class="tool-icon">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </div>
+                        <h3>Merge PDF</h3>
+                        <p>Combine multiple PDF files into one document</p>
+                    </div>
+
+                    <!-- Split PDF -->
+                    <div class="tool-card" onclick="selectTool('split')">
+                        <div class="tool-icon">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <h3>Split PDF</h3>
+                        <p>Extract pages from your PDF or split into multiple files</p>
+                    </div>
+
+                    <!-- Compress PDF -->
+                    <div class="tool-card" onclick="selectTool('compress')">
+                        <div class="tool-icon">
+                            <i class="fas fa-compress"></i>
+                        </div>
+                        <h3>Compress PDF</h3>
+                        <p>Reduce PDF file size while maintaining quality</p>
+                    </div>
+
+                    <!-- PDF to JPG -->
+                    <div class="tool-card" onclick="selectTool('pdf-to-jpg')">
+                        <div class="tool-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>PDF to JPG</h3>
+                        <p>Convert PDF pages to compressed images</p>
+                        <small style="color: #667eea; font-weight: 600;">✨ Perfect for large PDFs with many pages</small>
+                    </div>
+
+                    <!-- JPG to PDF -->
+                    <div class="tool-card" onclick="selectTool('jpg-to-pdf')">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-image"></i>
+                        </div>
+                        <h3>JPG to PDF</h3>
+                        <p>Convert JPG images to PDF documents</p>
+                    </div>
+
+                    <!-- Rotate PDF -->
+                    <div class="tool-card" onclick="selectTool('rotate')">
+                        <div class="tool-icon">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <h3>Rotate PDF</h3>
+                        <p>Rotate PDF pages to the right orientation</p>
+                    </div>
+
+                    <!-- Watermark PDF -->
+                    <div class="tool-card" onclick="selectTool('watermark')">
+                        <div class="tool-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <h3>Watermark PDF</h3>
+                        <p>Add text watermarks to your PDF documents</p>
+                    </div>
+
+                    <!-- Word to PDF -->
+                    <div class="tool-card" onclick="selectTool('word-to-pdf')">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <h3>Word to PDF</h3>
+                        <p>Convert Word documents to PDF format</p>
+                    </div>
+
+                    <!-- Excel to PDF -->
+                    <div class="tool-card" onclick="selectTool('excel-to-pdf')">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <h3>Excel to PDF</h3>
+                        <p>Convert Excel spreadsheets to PDF format</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Area -->
+            <section id="processing" class="processing-section" style="display: none;">
+                <div class="processing-header">
+                    <button class="btn btn-secondary" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Tools
+                    </button>
+                    <h2 id="tool-title">Tool Name</h2>
+                </div>
+
+                <!-- File Drop Zone -->
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drop files here or click to select</h3>
+                        <p id="drop-zone-description">Select PDF files to process</p>
+                        <button class="btn btn-primary" onclick="selectFiles()">
+                            <i class="fas fa-folder-open"></i>
+                            Select Files
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div class="file-list" id="fileList" style="display: none;">
+                    <h3>Selected Files</h3>
+                    <div id="files"></div>
+                    <div class="file-actions">
+                        <button class="btn btn-secondary" onclick="clearFiles()">
+                            <i class="fas fa-trash"></i>
+                            Clear All
+                        </button>
+                        <button class="btn btn-primary" id="processBtn" onclick="processFiles()">
+                            <i class="fas fa-play"></i>
+                            Process Files
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tool-specific Options -->
+                <div class="tool-options" id="toolOptions" style="display: none;">
+                    <!-- Split PDF Options -->
+                    <div id="splitOptions" class="option-group" style="display: none;">
+                        <h3>Split Options</h3>
+                        <div class="option">
+                            <label>
+                                <input type="radio" name="splitType" value="pages" checked>
+                                Split by page ranges
+                            </label>
+                            <input type="text" id="pageRanges" placeholder="e.g., 1-3, 5-7, 9" class="form-control">
+                        </div>
+                        <div class="option">
+                            <label>
+                                <input type="radio" name="splitType" value="count">
+                                Split into equal parts
+                            </label>
+                            <input type="number" id="partCount" placeholder="Number of parts" class="form-control" min="2">
+                        </div>
+                    </div>
+
+                    <!-- Rotation Options -->
+                    <div id="rotateOptions" class="option-group" style="display: none;">
+                        <h3>Rotation Angle</h3>
+                        <div class="rotation-buttons">
+                            <button type="button" class="btn btn-outline rotation-btn" data-angle="90">90°</button>
+                            <button type="button" class="btn btn-outline rotation-btn" data-angle="180">180°</button>
+                            <button type="button" class="btn btn-outline rotation-btn" data-angle="270">270°</button>
+                        </div>
+                    </div>
+
+                    <!-- Watermark Options -->
+                    <div id="watermarkOptions" class="option-group" style="display: none;">
+                        <h3>Watermark Settings</h3>
+                        <div class="option">
+                            <label for="watermarkText">Watermark Text:</label>
+                            <input type="text" id="watermarkText" placeholder="Enter watermark text" class="form-control">
+                        </div>
+                        <div class="option">
+                            <label for="watermarkOpacity">Opacity:</label>
+                            <input type="range" id="watermarkOpacity" min="0.1" max="1" step="0.1" value="0.3" class="form-range">
+                            <span id="opacityValue">30%</span>
+                        </div>
+                    </div>
+
+                    <!-- Compression Options -->
+                    <div id="compressOptions" class="option-group" style="display: none;">
+                        <h3>Compression Level</h3>
+                        <div class="compression-levels">
+                            <label>
+                                <input type="radio" name="compression" value="low" checked>
+                                Low compression (Better quality)
+                            </label>
+                            <label>
+                                <input type="radio" name="compression" value="medium">
+                                Medium compression (Balanced)
+                            </label>
+                            <label>
+                                <input type="radio" name="compression" value="high">
+                                High compression (Smaller size)
+                            </label>
+                        </div>
+                    </div>                    <!-- Image Quality Options -->
+                    <div id="imageOptions" class="option-group" style="display: none;">
+                        <h3>📷 PDF to JPG Options</h3>
+                        
+                        <!-- Processing Mode -->
+                        <div class="option">
+                            <label style="margin-bottom: 10px; display: block; font-weight: bold;">
+                                Processing Mode:
+                            </label>
+                            <div style="display: grid; gap: 10px;">
+                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                    <input type="radio" name="processingMode" value="pages" checked style="margin-right: 10px;">
+                                    <div>
+                                        <strong>Page to JPG</strong>
+                                        <br><small style="color: #666;">Every page of this PDF will be converted into a JPG file</small>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                    <input type="radio" name="processingMode" value="extract" style="margin-right: 10px;">
+                                    <div>
+                                        <strong>Extract Images</strong>
+                                        <br><small style="color: #666;">Extract images embedded in PDF</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Quality -->
+                        <div class="option">
+                            <label style="margin-bottom: 10px; display: block; font-weight: bold;">
+                                Image Quality:
+                            </label>
+                            <div style="display: grid; gap: 10px;">
+                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                    <input type="radio" name="imageQuality" value="normal" checked style="margin-right: 10px;">
+                                    <div>
+                                        <strong>Normal (75%)</strong>
+                                        <br><small style="color: #666;">Good quality, smaller file size - recommended for sharing</small>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                    <input type="radio" name="imageQuality" value="high" style="margin-right: 10px;">
+                                    <div>
+                                        <strong>High</strong>
+                                        <br><small style="color: #666;">Maximum quality (100%), largest file size</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Steps for Large PDFs -->
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                    <h4 style="color: #495057; margin-bottom: 15px; text-align: center;">
+                        <i class="fas fa-list-ol"></i> How to Process Large PDFs
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="background: #667eea; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">1</div>
+                            <strong>Drop PDF File</strong>
+                            <br><small>Upload your multi-page PDF</small>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="background: #667eea; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">2</div>
+                            <strong>Adjust Settings</strong>
+                            <br><small>Set quality & format</small>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="background: #667eea; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">3</div>
+                            <strong>Process Files</strong>
+                            <br><small>Convert all pages</small>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="background: #28a745; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold;">4</div>
+                            <strong>Optimize & ZIP</strong>
+                            <br><small>Compress all images</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress-section" id="progressSection" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">Processing...</p>
+                </div>
+
+                <!-- Results -->
+                <div class="results-section" id="resultsSection" style="display: none;">
+                    <h3>Processing Complete!</h3>
+                    <div id="downloadLinks"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 PDF Tools. Built with Electron. Professional PDF management made easy.</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing your files...</p>
+        </div>
+    </div>
+
+    <script src="js/renderer.js"></script>
+</body>
+</html>

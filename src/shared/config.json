@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "PDF Tools",
+    "version": "1.0.0",
+    "author": "phirun",
+    "description": "A comprehensive PDF manipulation tool built with Electron"
+  },
+  "window": {
+    "width": 1200,
+    "height": 800,
+    "minWidth": 800,
+    "minHeight": 600,
+    "resizable": true,
+    "center": true,
+    "show": false,
+    "webPreferences": {
+      "nodeIntegration": true,
+      "contextIsolation": false,
+      "enableRemoteModule": true
+    }
+  },
+  "development": {
+    "devTools": true,
+    "reloadOnChange": true,
+    "verbose": true
+  },
+  "temp": {
+    "cleanupInterval": 15,
+    "maxFileAge": 30,
+    "subdirectories": ["pages", "extracted", "optimized", "conversions"]
+  },
+  "pdf": {
+    "defaultQuality": 85,
+    "defaultDPI": 150,
+    "maxFileSize": 104857600,
+    "supportedFormats": ["pdf"]
+  },
+  "images": {
+    "supportedFormats": ["jpg", "jpeg", "png", "gif", "bmp", "webp"],
+    "defaultFormat": "jpeg",
+    "defaultQuality": 85,
+    "maxDimensions": {
+      "width": 4096,
+      "height": 4096
+    }
+  },
+  "documents": {
+    "supportedFormats": ["doc", "docx", "xls", "xlsx", "ppt", "pptx"],
+    "conversionTimeout": 30000
+  }
+}
