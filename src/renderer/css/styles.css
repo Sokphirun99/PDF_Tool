@@ -1,3 +1,90 @@
+/* CSS Custom Properties for Theming */
+:root {
+    /* Light theme colors */
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --text-color: #333;
+    --text-color-light: #666;
+    --text-color-subtle: #999;
+    --bg-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --surface-color: rgba(255, 255, 255, 0.95);
+    --surface-color-secondary: rgba(255, 255, 255, 0.1);
+    --card-bg: white;
+    --border-color: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --hover-bg: rgba(102, 126, 234, 0.1);
+    --drop-zone-bg: rgba(102, 126, 234, 0.05);
+    --form-bg: white;
+    --loading-bg: rgba(0, 0, 0, 0.8);
+    --hero-text: white;
+    --hero-text-subtle: rgba(255, 255, 255, 0.9);
+    --file-item-bg: #f8f9fa;
+    
+    /* Status colors */
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --error-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Component specific */
+    --success-bg-color: #d4edda;
+    --warning-bg-color: #fff3cd;
+    --info-bg-color: #d1ecf1;
+    --neutral-bg-color: #f8f9fa;
+    --code-bg-color: #f1f3f4;
+    --input-bg-color: white;
+    --text-color-strong: #212529;
+    
+    /* Border colors */
+    --success-border-color: #c3e6cb;
+    --warning-border-color: #ffeaa7;
+    --info-border-color: #bee5eb;
+    --neutral-border-color: #dee2e6;
+}
+
+/* Dark theme colors */
+[data-theme="dark"] {
+    --primary-color: #7c8fee;
+    --secondary-color: #8b5fbf;
+    --text-color: #e0e0e0;
+    --text-color-light: #b0b0b0;
+    --text-color-subtle: #888;
+    --bg-color: linear-gradient(135deg, #1a1d3a 0%, #2d1b47 100%);
+    --surface-color: rgba(40, 44, 58, 0.95);
+    --surface-color-secondary: rgba(255, 255, 255, 0.05);
+    --card-bg: #2a2d3f;
+    --border-color: #404454;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --hover-bg: rgba(124, 143, 238, 0.2);
+    --drop-zone-bg: rgba(124, 143, 238, 0.1);
+    --form-bg: #2a2d3f;
+    --loading-bg: rgba(0, 0, 0, 0.9);
+    --hero-text: #e0e0e0;
+    --hero-text-subtle: rgba(224, 224, 224, 0.8);
+    --file-item-bg: #333649;
+    
+    /* Status colors - adjusted for dark theme */
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --error-color: #f44336;
+    --info-color: #2196f3;
+    
+    /* Component specific - dark theme */
+    --success-bg-color: #1b4332;
+    --warning-bg-color: #3d2f00;
+    --info-bg-color: #0c2d48;
+    --neutral-bg-color: #2a2d3f;
+    --code-bg-color: #1e1e1e;
+    --input-bg-color: #333649;
+    --text-color-strong: #f0f0f0;
+    
+    /* Border colors - dark theme */
+    --success-border-color: #2d5a3d;
+    --warning-border-color: #5a4100;
+    --info-border-color: #1e4a6b;
+    --neutral-border-color: #404454;
+}
+
 /* Reset and base styles */
 * {
     margin: 0;
@@ -8,9 +95,10 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-color);
+    background: var(--bg-color);
     min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .app-container {
@@ -21,16 +109,17 @@ body {
 
 /* Header */
 .header {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--surface-color);
     backdrop-filter: blur(10px);
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 20px var(--shadow-color);
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background-color 0.3s ease;
 }
 
 .logo {
@@ -41,23 +130,24 @@ body {
 
 .logo i {
     font-size: 2rem;
-    color: #667eea;
+    color: var(--primary-color);
 }
 
 .logo h1 {
-    color: #333;
+    color: var(--text-color);
     font-size: 1.8rem;
     font-weight: 700;
 }
 
 .nav {
     display: flex;
+    align-items: center;
     gap: 2rem;
 }
 
 .nav-link {
     text-decoration: none;
-    color: #666;
+    color: var(--text-color-light);
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -66,8 +156,36 @@ body {
 
 .nav-link:hover,
 .nav-link.active {
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+    background: var(--hover-bg);
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    background: var(--surface-color-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    margin-left: 1rem;
+}
+
+.dark-mode-toggle:hover {
+    background: var(--hover-bg);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.dark-mode-toggle:active {
+    transform: scale(0.95);
 }
 
 /* Main Content */
@@ -80,7 +198,7 @@ body {
 .hero {
     text-align: center;
     padding: 4rem 0;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-color-secondary);
     border-radius: 20px;
     margin-bottom: 3rem;
     backdrop-filter: blur(10px);
@@ -88,14 +206,14 @@ body {
 
 .hero-content h2 {
     font-size: 3rem;
-    color: white;
+    color: var(--hero-text);
     margin-bottom: 1rem;
     font-weight: 700;
 }
 
 .hero-content p {
     font-size: 1.3rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--hero-text-subtle);
     margin-bottom: 2rem;
 }
 
@@ -115,7 +233,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
@@ -126,40 +244,40 @@ body {
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: var(--surface-color-secondary);
+    color: var(--hero-text);
+    border: 2px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--hover-bg);
     transform: translateY(-2px);
 }
 
 .btn-outline {
     background: transparent;
-    color: #667eea;
-    border: 2px solid #667eea;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
 }
 
 .btn-outline:hover {
-    background: #667eea;
+    background: var(--primary-color);
     color: white;
 }
 
 /* Tools Section */
 .tools-section {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--surface-color);
     border-radius: 20px;
     padding: 3rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px var(--shadow-color);
 }
 
 .tools-section h2 {
     text-align: center;
     margin-bottom: 3rem;
     font-size: 2.5rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .tools-grid {
@@ -169,26 +287,26 @@ body {
 }
 
 .tool-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 2rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 15px var(--shadow-color);
     border: 2px solid transparent;
 }
 
 .tool-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-    border-color: #667eea;
+    box-shadow: 0 15px 30px var(--shadow-color);
+    border-color: var(--primary-color);
 }
 
 .tool-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -200,21 +318,21 @@ body {
 
 .tool-card h3 {
     margin-bottom: 1rem;
-    color: #333;
+    color: var(--text-color);
     font-size: 1.3rem;
 }
 
 .tool-card p {
-    color: #666;
+    color: var(--text-color-light);
     line-height: 1.5;
 }
 
 /* Processing Section */
 .processing-section {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--surface-color);
     border-radius: 20px;
     padding: 3rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px var(--shadow-color);
 }
 
 .processing-header {
@@ -225,54 +343,54 @@ body {
 }
 
 .processing-header h2 {
-    color: #333;
+    color: var(--text-color);
     font-size: 2rem;
 }
 
 /* Drop Zone */
 .drop-zone {
-    border: 3px dashed #ccc;
+    border: 3px dashed var(--border-color);
     border-radius: 15px;
     padding: 4rem 2rem;
     text-align: center;
     transition: all 0.3s ease;
-    background: rgba(102, 126, 234, 0.05);
+    background: var(--drop-zone-bg);
 }
 
 .drop-zone:hover,
 .drop-zone.dragover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-color);
+    background: var(--hover-bg);
 }
 
 .drop-zone-content i {
     font-size: 4rem;
-    color: #667eea;
+    color: var(--primary-color);
     margin-bottom: 1rem;
 }
 
 .drop-zone-content h3 {
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .drop-zone-content p {
-    color: #666;
+    color: var(--text-color-light);
     margin-bottom: 2rem;
 }
 
 /* File List */
 .file-list {
     margin-top: 2rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 15px var(--shadow-color);
 }
 
 .file-list h3 {
     margin-bottom: 1.5rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .file-item {
@@ -280,7 +398,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: #f8f9fa;
+    background: var(--file-item-bg);
     border-radius: 8px;
     margin-bottom: 1rem;
 }
@@ -294,7 +412,7 @@ body {
 .file-icon {
     width: 40px;
     height: 40px;
-    background: #667eea;
+    background: var(--primary-color);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -304,11 +422,11 @@ body {
 
 .file-details h4 {
     margin-bottom: 0.25rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .file-details p {
-    color: #666;
+    color: var(--text-color-light);
     font-size: 0.9rem;
 }
 
@@ -318,21 +436,21 @@ body {
     align-items: center;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 2px solid #eee;
+    border-top: 2px solid var(--border-color);
 }
 
 /* Tool Options */
 .tool-options {
     margin-top: 2rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 15px var(--shadow-color);
 }
 
 .option-group h3 {
     margin-bottom: 1.5rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .option {
@@ -342,30 +460,31 @@ body {
 .option label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--text-color);
     font-weight: 500;
 }
 
 .form-control {
     width: 100%;
     padding: 10px 12px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 14px;
     transition: border-color 0.3s ease;
-    background: white;
+    background: var(--input-bg-color);
+    color: var(--text-color);
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-range {
     width: 100%;
     height: 6px;
-    background: #ddd;
+    background: var(--border-color);
     border-radius: 5px;
     outline: none;
     opacity: 0.7;
@@ -384,19 +503,19 @@ body {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #667eea;
+    background: var(--primary-color);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px var(--shadow-color);
 }
 
 .form-range::-moz-range-thumb {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #667eea;
+    background: var(--primary-color);
     cursor: pointer;
     border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px var(--shadow-color);
 }
 
 .rotation-buttons {
@@ -430,7 +549,7 @@ body {
 }
 
 .compression-levels label:hover {
-    background: rgba(102, 126, 234, 0.05);
+    background: var(--hover-bg);
 }
 
 /* Progress */
@@ -442,7 +561,7 @@ body {
 .progress-bar {
     width: 100%;
     height: 8px;
-    background: #eee;
+    background: var(--border-color);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 1rem;
@@ -450,7 +569,7 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
     width: 0%;
     transition: width 0.3s ease;
 }
@@ -458,24 +577,24 @@ body {
 /* Results */
 .results-section {
     margin-top: 2rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 5px 15px var(--shadow-color);
     text-align: center;
 }
 
 .results-section h3 {
-    color: #28a745;
+    color: var(--success-color);
     margin-bottom: 2rem;
 }
 
 /* Footer */
 .footer {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--surface-color-secondary);
     padding: 2rem;
     text-align: center;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--hero-text-subtle);
 }
 
 /* Loading Overlay */
@@ -485,7 +604,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--loading-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -575,6 +694,11 @@ label:has(input[name="imageQuality"]:checked) {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
 .tool-card,
 .file-item {
     animation: fadeIn 0.5s ease-out;
@@ -639,9 +763,161 @@ label:has(input[name="imageQuality"]:checked) {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--loading-bg);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px var(--shadow-color);
+    color: var(--text-color);
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+}
+
+.close-button {
+    float: right;
+    font-size: 1.5rem;
+    color: var(--text-color-light);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-button:hover {
+    color: var(--error-color);
+}
+
+/* Processing mode and quality radio buttons - dark mode aware */
+input[name="processingMode"], input[name="imageQuality"] {
+    transform: scale(1.2);
+}
+
+label:has(input[name="processingMode"]):hover,
+label:has(input[name="imageQuality"]):hover {
+    border-color: var(--primary-color) !important;
+    background: var(--hover-bg);
+}
+
+label:has(input[name="processingMode"]:checked),
+label:has(input[name="imageQuality"]:checked) {
+    border-color: var(--primary-color) !important;
+    background: var(--hover-bg);
+}
+
+/* Download item styles - dark mode aware */
+.download-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: var(--card-bg);
+    transition: box-shadow 0.2s;
+}
+
+.download-item:hover {
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.download-item .file-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.download-item .file-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2em;
+}
+
+.download-item .file-details h4 {
+    margin: 0 0 5px 0;
+    color: var(--text-color);
+    font-size: 1em;
+}
+
+.download-item .file-details p {
+    margin: 0;
+    color: var(--text-color-light);
+    font-size: 0.9em;
+}
+
+/* Additional button styles for success and info */
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-color);
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-info {
+    background: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background: var(--info-color);
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* Result block styles */
+.result-block-success {
+    background: var(--success-bg-color);
+    border: 1px solid var(--success-border-color);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.success-icon {
+    color: var(--success-color);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.info-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-color-subtle);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Fix rotation button active state */
+.rotation-btn.active {
+    background: var(--primary-color) !important;
+    color: white !important;
 }

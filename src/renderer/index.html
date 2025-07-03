@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:;">
     <title>PDF Tools - Professional PDF Management</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -11,14 +12,17 @@
     <div class="app-container">
         <!-- Header -->
         <header class="header">
-            <div class="logo">
+            <a href="#home" class="logo" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
                 <i class="fas fa-file-pdf"></i>
-                <h1>PDF Tools</h1>
-            </div>
+                <h1 style="margin-left: 8px;">PDF Tools</h1>
+            </a>
             <nav class="nav">
                 <a href="#home" class="nav-link active">Home</a>
                 <a href="#tools" class="nav-link">Tools</a>
                 <a href="#about" class="nav-link">About</a>
+                <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
             </nav>
         </header>
 
@@ -43,86 +47,86 @@
                 <h2>PDF Tools</h2>
                 <div class="tools-grid">
                     <!-- Merge PDF -->
-                    <div class="tool-card" onclick="selectTool('merge')">
+                    <button class="tool-card" onclick="selectTool('merge')" aria-label="Merge PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-compress-arrows-alt"></i>
                         </div>
                         <h3>Merge PDF</h3>
                         <p>Combine multiple PDF files into one document</p>
-                    </div>
+                    </button>
 
                     <!-- Split PDF -->
-                    <div class="tool-card" onclick="selectTool('split')">
+                    <button class="tool-card" onclick="selectTool('split')" aria-label="Split PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-cut"></i>
                         </div>
                         <h3>Split PDF</h3>
                         <p>Extract pages from your PDF or split into multiple files</p>
-                    </div>
+                    </button>
 
                     <!-- Compress PDF -->
-                    <div class="tool-card" onclick="selectTool('compress')">
+                    <button class="tool-card" onclick="selectTool('compress')" aria-label="Compress PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-compress"></i>
                         </div>
                         <h3>Compress PDF</h3>
                         <p>Reduce PDF file size while maintaining quality</p>
-                    </div>
+                    </button>
 
                     <!-- PDF to JPG -->
-                    <div class="tool-card" onclick="selectTool('pdf-to-jpg')">
+                    <button class="tool-card" onclick="selectTool('pdf-to-jpg')" aria-label="PDF to JPG tool">
                         <div class="tool-icon">
                             <i class="fas fa-image"></i>
                         </div>
                         <h3>PDF to JPG</h3>
                         <p>Convert PDF pages to compressed images</p>
                         <small style="color: #667eea; font-weight: 600;">✨ Perfect for large PDFs with many pages</small>
-                    </div>
+                    </button>
 
                     <!-- JPG to PDF -->
-                    <div class="tool-card" onclick="selectTool('jpg-to-pdf')">
+                    <button class="tool-card" onclick="selectTool('jpg-to-pdf')" aria-label="JPG to PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-file-image"></i>
                         </div>
                         <h3>JPG to PDF</h3>
                         <p>Convert JPG images to PDF documents</p>
-                    </div>
+                    </button>
 
                     <!-- Rotate PDF -->
-                    <div class="tool-card" onclick="selectTool('rotate')">
+                    <button class="tool-card" onclick="selectTool('rotate')" aria-label="Rotate PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-redo"></i>
                         </div>
                         <h3>Rotate PDF</h3>
                         <p>Rotate PDF pages to the right orientation</p>
-                    </div>
+                    </button>
 
                     <!-- Watermark PDF -->
-                    <div class="tool-card" onclick="selectTool('watermark')">
+                    <button class="tool-card" onclick="selectTool('watermark')" aria-label="Watermark PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-tint"></i>
                         </div>
                         <h3>Watermark PDF</h3>
                         <p>Add text watermarks to your PDF documents</p>
-                    </div>
+                    </button>
 
                     <!-- Word to PDF -->
-                    <div class="tool-card" onclick="selectTool('word-to-pdf')">
+                    <button class="tool-card" onclick="selectTool('word-to-pdf')" aria-label="Word to PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-file-word"></i>
                         </div>
                         <h3>Word to PDF</h3>
                         <p>Convert Word documents to PDF format</p>
-                    </div>
+                    </button>
 
                     <!-- Excel to PDF -->
-                    <div class="tool-card" onclick="selectTool('excel-to-pdf')">
+                    <button class="tool-card" onclick="selectTool('excel-to-pdf')" aria-label="Excel to PDF tool">
                         <div class="tool-icon">
                             <i class="fas fa-file-excel"></i>
                         </div>
                         <h3>Excel to PDF</h3>
                         <p>Convert Excel spreadsheets to PDF format</p>
-                    </div>
+                    </button>
                 </div>
             </section>
 
@@ -137,7 +141,7 @@
                 </div>
 
                 <!-- File Drop Zone -->
-                <div class="drop-zone" id="dropZone">
+                <div class="drop-zone" id="dropZone" tabindex="0" role="button">
                     <div class="drop-zone-content">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <h3>Drop files here or click to select</h3>
@@ -311,7 +315,7 @@
                 <!-- Progress -->
                 <div class="progress-section" id="progressSection" style="display: none;">
                     <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-fill" id="progressFill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
                     </div>
                     <p id="progressText">Processing...</p>
                 </div>
@@ -327,6 +331,11 @@
         <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2025 PDF Tools. Built with Electron. Professional PDF management made easy.</p>
+            <nav style="margin-top: 10px;">
+                <a href="#home" class="nav-link">Home</a> |
+                <a href="#tools" class="nav-link">Tools</a> |
+                <a href="#about" class="nav-link">About</a>
+            </nav>
         </footer>
     </div>
 

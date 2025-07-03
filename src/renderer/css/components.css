@@ -1,0 +1,204 @@
+.result-block-warning {
+    padding: 15px;
+    border: 1px solid var(--warning-border-color);
+    background-color: var(--warning-bg-color);
+    border-radius: 5px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.result-block-info {
+    padding: 15px;
+    border: 1px solid var(--info-border-color);
+    background-color: var(--info-bg-color);
+    border-radius: 5px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.result-block-neutral {
+    padding: 15px;
+    border: 1px solid var(--neutral-border-color);
+    background-color: var(--neutral-bg-color);
+    border-radius: 5px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.file-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.icon-success {
+    background-color: var(--success-bg-color);
+    color: var(--success-color);
+}
+
+.icon-warning {
+    background-color: var(--warning-bg-color);
+    color: var(--warning-color);
+}
+
+.file-details h4 {
+    margin: 0;
+    font-size: 1em;
+}
+
+.file-details p {
+    margin: 0;
+    font-size: 0.8em;
+    color: var(--text-color-subtle);
+}
+
+.button-group {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.subtle-text {
+    font-size: 0.8em;
+    color: var(--text-color-subtle);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.status-ready {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.preview-title {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: var(--text-color-strong);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+}
+
+.page-info-text {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.zip-success-modal .modal-content,
+.image-save-success-modal .modal-content,
+.compression-options-modal .modal-content {
+    padding: 20px;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.success-icon-large {
+    color: var(--success-color);
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.modal-body .file-path {
+    background-color: var(--code-bg-color);
+    padding: 10px;
+    border-radius: 5px;
+    word-wrap: break-word;
+    margin: 15px 0;
+    border: 1px solid var(--border-color);
+}
+
+.file-list {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 15px 0;
+}
+
+.file-list-item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.file-list-icon {
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.modal-title {
+    margin-bottom: 20px;
+    color: var(--text-color-strong);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color-strong);
+}
+
+.quality-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quality-slider {
+    flex: 1;
+    height: 6px;
+    background: var(--border-color);
+    outline: none;
+    border-radius: 5px;
+}
+
+.quality-value {
+    min-width: 50px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.form-help-text {
+    color: var(--text-color-subtle);
+    margin-top: 5px;
+    display: block;
+}
+
+.dpi-select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
