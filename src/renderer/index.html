@@ -261,23 +261,32 @@
                         <!-- Image Quality -->
                         <div class="option">
                             <label style="margin-bottom: 10px; display: block; font-weight: bold;">
-                                Image Quality:
+                                Image Quality & Speed:
                             </label>
                             <div style="display: grid; gap: 10px;">
-                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #28a745; border-radius: 8px; cursor: pointer;">
                                     <input type="radio" name="imageQuality" value="normal" checked style="margin-right: 10px;">
                                     <div>
-                                        <strong>Normal (75%)</strong>
-                                        <br><small style="color: #666;">Good quality, smaller file size - recommended for sharing</small>
+                                        <strong>Fast Quality (85%, 120 DPI)</strong>
+                                        <br><small style="color: #666;">Recommended for large PDFs - faster processing</small>
                                     </div>
                                 </label>
                                 <label style="display: flex; align-items: center; padding: 12px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
                                     <input type="radio" name="imageQuality" value="high" style="margin-right: 10px;">
                                     <div>
-                                        <strong>High</strong>
-                                        <br><small style="color: #666;">Maximum quality (100%), largest file size</small>
+                                        <strong>High Quality (100%, 200 DPI)</strong>
+                                        <br><small style="color: #666;">Best quality but slower processing</small>
                                     </div>
                                 </label>
+                            </div>
+                            
+                            <!-- Performance tip -->
+                            <div style="background: #e7f3ff; border: 1px solid #b8daff; border-radius: 8px; padding: 12px; margin-top: 10px;">
+                                <small style="color: #004085;">
+                                    <i class="fas fa-lightbulb"></i> <strong>Performance Tip:</strong> 
+                                    Large PDFs (50+ pages) are automatically limited to first 50 pages for faster processing. 
+                                    Use "Fast Quality" for best performance.
+                                </small>
                             </div>
                         </div>
                     </div>

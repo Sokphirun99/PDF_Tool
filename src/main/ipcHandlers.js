@@ -22,6 +22,9 @@ class IPCHandlers {
     ipcMain.handle('write-file', this.writeFile.bind(this));
     ipcMain.handle('delete-file', this.deleteFile.bind(this));
     ipcMain.handle('file-exists', this.fileExists.bind(this));
+    ipcMain.handle('save-images', this.saveImages.bind(this));
+    ipcMain.handle('select-folder', this.selectFolder.bind(this));
+    ipcMain.handle('open-file-location', this.openFileLocation.bind(this));
     
     // Application operations
     ipcMain.handle('show-message-box', this.showMessageBox.bind(this));
@@ -148,6 +151,96 @@ class IPCHandlers {
     });
 
     return result;
+  }
+
+  async saveImages(event, imagePaths, originalPdfPath) {
+    try {
+      if (!imagePaths || imagePaths.length === 0) {
+        return [];
+      }
+
+      const savedPaths = [];
+      const originalName = path.basename(originalPdfPath, path.extname(originalPdfPath));
+      
+      for (let i = 0; i < imagePaths.length; i++) {
+        const imagePath = imagePaths[i];
+        const extension = path.extname(imagePath);
+        const suggestedName = `${originalName}_page_${i + 1}${extension}`;
+        
+        const result = await dialog.showSaveDialog(windowManager.getMainWindow(), {
+          title: `Save Image ${i + 1} of ${imagePaths.length}`,
+          defaultPath: suggestedName,
+          filters: [
+            { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg'] },
+            { name: 'All Files', extensions: ['*'] }
+          ]
+        });
+        
+        if (!result.canceled && result.filePath) {
+          // Copy the temporary image to the selected location
+          fs.copyFileSync(imagePath, result.filePath);
+          savedPaths.push(result.filePath);
+        } else {
+          // User cancelled, break the loop
+          break;
+        }
+      }
+      
+      return savedPaths;
+    } catch (error) {
+      console.error('Error saving images:', error);
+      throw error;
+    }
+  }
+
+  async selectFolder() {
+    const result = await dialog.showOpenDialog(windowManager.getMainWindow(), {
+      title: 'Select Folder to Save Images',
+      properties: ['openDirectory']
+    });
+
+    return result;
+  }
+
+  async openFileLocation(filePath) {
+    try {
+      console.log('Opening folder containing file:', filePath);
+      
+      // Handle case where filePath might be an object
+      let actualPath = filePath;
+      if (typeof filePath === 'object') {
+        // Extract path from object if it has a path property
+        if (filePath && filePath.path) {
+          actualPath = filePath.path;
+        } else if (filePath && filePath.zipPath) {
+          actualPath = filePath.zipPath;
+        } else {
+          console.error('Invalid file path object:', filePath);
+          throw new Error('Invalid file path object provided');
+        }
+      }
+      
+      // Ensure we have a valid string path
+      if (!actualPath || typeof actualPath !== 'string') {
+        throw new Error('File path must be a valid string, received: ' + typeof actualPath);
+      }
+      
+      if (!fs.existsSync(actualPath)) {
+        throw new Error('File not found: ' + actualPath);
+      }
+
+      const path = require('path');
+      const { shell } = require('electron');
+      
+      // Just open the folder, don't select the file
+      const folderPath = path.dirname(actualPath);
+      await shell.openPath(folderPath);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error opening folder:', error);
+      return { success: false, error: error.message };
+    }
   }
 }
 

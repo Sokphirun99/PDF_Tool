@@ -66,4 +66,11 @@ app.on('web-contents-created', (event, contents) => {
   });
 });
 
+// Set up environment PATH to include Homebrew paths
+process.env.PATH = [
+    '/opt/homebrew/bin',      // M1 Macs
+    '/usr/local/bin',         // Intel Macs
+    process.env.PATH
+].join(':');
+
 console.log('PDF Tools application started successfully!');

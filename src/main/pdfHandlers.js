@@ -27,7 +27,6 @@ class PDFHandlers {
     ipcMain.handle('extract-pdf-images', this.extractPDFImages.bind(this));
     
     // File Operations
-    ipcMain.handle('save-images', this.saveImages.bind(this));
     ipcMain.handle('create-zip', this.createZip.bind(this));
     ipcMain.handle('create-images-zip', this.createImagesZip.bind(this));
     ipcMain.handle('create-auto-zip', this.createAutoZip.bind(this));
@@ -83,11 +82,23 @@ class PDFHandlers {
     }
   }
 
-  async pdfToImages(event, filePath, options = {}) {
+  async pdfToImages(event, filePath, format = 'jpg', options = {}) {
     try {
-      const imagePaths = await imageService.convertPDFToImages(filePath, options);
+      // Merge format into options
+      const convertOptions = {
+        format: format === 'jpg' ? 'jpeg' : format,
+        ...options
+      };
+      
+      const imagePaths = await imageService.convertPDFToImages(filePath, convertOptions);
+      
+      if (!imagePaths || imagePaths.length === 0) {
+        throw new Error('No images were generated from the PDF');
+      }
+      
       return { success: true, data: imagePaths };
     } catch (error) {
+      console.error('PDF to images conversion failed:', error);
       return { success: false, error: error.message };
     }
   }
@@ -101,35 +112,6 @@ class PDFHandlers {
     }
   }
 
-  async saveImages(event, imagePaths, originalPdfPath) {
-    try {
-      const results = [];
-      const originalName = path.basename(originalPdfPath, path.extname(originalPdfPath));
-      
-      for (let i = 0; i < imagePaths.length; i++) {
-        const imagePath = imagePaths[i];
-        const extension = path.extname(imagePath);
-        const suggestedName = `${originalName}_page_${i + 1}${extension}`;
-        
-        const result = await dialog.showSaveDialog(windowManager.getMainWindow(), {
-          defaultPath: suggestedName,
-          filters: [
-            { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg'] },
-            { name: 'All Files', extensions: ['*'] }
-          ]
-        });
-        
-        if (!result.canceled) {
-          fs.copyFileSync(imagePath, result.filePath);
-          results.push(result.filePath);
-        }
-      }
-      
-      return { success: true, data: results };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }
 
   async createZip(event, files, zipPath) {
     try {
@@ -174,6 +156,14 @@ class PDFHandlers {
 
   async createImagesZip(event, imagePaths, originalPdfPath) {
     try {
+      if (!imagePaths || imagePaths.length === 0) {
+        return { success: false, error: 'No images provided' };
+      }
+      
+      if (!originalPdfPath || typeof originalPdfPath !== 'string') {
+        return { success: false, error: 'Invalid PDF path' };
+      }
+      
       const originalName = path.basename(originalPdfPath, path.extname(originalPdfPath));
       const zipPath = path.join(tempManager.createUniqueDir('zip'), `${originalName}_images.zip`);
       
@@ -182,7 +172,18 @@ class PDFHandlers {
         name: `page_${index + 1}${path.extname(imagePath)}`
       }));
 
-      return await this.createZip(event, files, zipPath);
+      const zipResult = await this.createZip(event, files, zipPath);
+      
+      if (zipResult.success) {
+        return {
+          success: true,
+          zipPath: zipPath,
+          fileCount: files.length,
+          totalBytes: zipResult.size
+        };
+      } else {
+        return zipResult;
+      }
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -190,6 +191,14 @@ class PDFHandlers {
 
   async createAutoZip(event, imagePaths, originalPdfPath, mode) {
     try {
+      if (!imagePaths || imagePaths.length === 0) {
+        return { success: false, error: 'No images provided' };
+      }
+      
+      if (!originalPdfPath || typeof originalPdfPath !== 'string') {
+        return { success: false, error: 'Invalid PDF path' };
+      }
+      
       const originalName = path.basename(originalPdfPath, path.extname(originalPdfPath));
       const zipPath = path.join(tempManager.createUniqueDir('zip'), `${originalName}_${mode}.zip`);
       
@@ -198,7 +207,21 @@ class PDFHandlers {
         name: `${mode}_${index + 1}${path.extname(imagePath)}`
       }));
 
-      return await this.createZip(event, files, zipPath);
+      const zipResult = await this.createZip(event, files, zipPath);
+      
+      if (zipResult.success) {
+        // Return the expected structure
+        return {
+          success: true,
+          zipPath: zipPath,
+          fileCount: files.length,
+          compressedSize: zipResult.size,
+          totalBytes: zipResult.size,
+          mode: mode
+        };
+      } else {
+        return zipResult;
+      }
     } catch (error) {
       return { success: false, error: error.message };
     }

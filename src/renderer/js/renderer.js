@@ -379,13 +379,14 @@ async function processFiles() {
                 const imageOptions = getImageConversionOptions();
                 const processingMode = getProcessingMode();
                 
-                // Show quality setting in the status
-                const qualityText = imageOptions.quality === 100 ? 'High (100%)' : 'Normal (75%)';
-                showProgress(`Converting PDF with ${qualityText} quality...`);
+                // Show optimized quality setting in the status
+                const qualityText = imageOptions.quality === 100 ? 'High Quality (200 DPI)' : 'Fast Quality (120 DPI)';
+                showProgress(`Converting PDF with ${qualityText}... (Optimized for speed)`);
                 
                 try {
                     if (processingMode === 'extract') {
                         // Extract embedded images only
+                        showProgress('Extracting embedded images from PDF...');
                         result = await ipcRenderer.invoke('extract-pdf-images', filePaths[0], imageOptions);
                         if (result && result.length > 5) {
                             await autoCreateZipFromImages(result, filePaths[0], 'extracted');
@@ -394,11 +395,40 @@ async function processFiles() {
                         }
                     } else {
                         // Convert pages to JPG (default)
-                        result = await ipcRenderer.invoke('pdf-to-images', filePaths[0], 'jpg', imageOptions);
-                        if (result && result.length > 5) {
-                            await autoCreateZipFromImages(result, filePaths[0], 'pages');
+                        
+                        // Get selected pages from the page selection UI
+                        const selectedPages = window.selectedPages || [];
+                        const pageSelectionText = selectedPages.length > 0 ? 
+                            `Converting ${selectedPages.length} selected pages to images...` : 
+                            'Converting PDF pages to images... This may take a moment for large PDFs.';
+                        
+                        showProgress(pageSelectionText);
+                        
+                        // Add selected pages to options
+                        const conversionOptions = {
+                            ...imageOptions,
+                            selectedPages: selectedPages.length > 0 ? selectedPages : null
+                        };
+                        
+                        // Add progress tracking
+                        const startTime = Date.now();
+                        result = await ipcRenderer.invoke('pdf-to-images', filePaths[0], 'jpg', conversionOptions);
+                        const endTime = Date.now();
+                        
+                        console.log(`PDF conversion completed in ${(endTime - startTime) / 1000}s`);
+                        
+                        if (result.success) {
+                            const imagePaths = result.data;
+                            const actualCount = imagePaths.length;
+                            showProgress(`Conversion complete! Processing ${actualCount} images...`);
+                            
+                            if (imagePaths && imagePaths.length > 5) {
+                                await autoCreateZipFromImages(imagePaths, filePaths[0], 'pages');
+                            } else {
+                                await saveImageResults(imagePaths, filePaths[0]);
+                            }
                         } else {
-                            await saveImageResults(result, filePaths[0]);
+                            throw new Error(result.error || 'Unknown error during PDF conversion');
                         }
                     }
                 } catch (conversionError) {
@@ -406,7 +436,12 @@ async function processFiles() {
                     let errorMessage = conversionError.message;
                     let helpText = '';
                     
-                    if (errorMessage.includes('pdftoppm') || errorMessage.includes('poppler')) {
+                    if (errorMessage.includes('timeout')) {
+                        helpText = '\n\n⏱️ The PDF took too long to process. Try:\n' +
+                                  '• Using a smaller PDF file\n' +
+                                  '• Converting fewer pages at once\n' +
+                                  '• Reducing the quality setting for faster processing';
+                    } else if (errorMessage.includes('pdftoppm') || errorMessage.includes('poppler')) {
                         helpText = '\n\n💡 To get high-quality image conversion, install poppler-utils:\n' +
                                   '• macOS: brew install poppler\n' +
                                   '• Ubuntu: sudo apt-get install poppler-utils\n' +
@@ -519,13 +554,14 @@ function getCompressionLevel() {
 function getImageConversionOptions() {
     // Get quality setting from radio buttons
     const qualityRadio = document.querySelector('input[name="imageQuality"]:checked');
-    const quality = qualityRadio && qualityRadio.value === 'high' ? 100 : 75;
+    const quality = qualityRadio && qualityRadio.value === 'high' ? 100 : 85; // Increased default quality
     
     return {
         quality: quality,
-        dpi: qualityRadio && qualityRadio.value === 'high' ? 300 : 150, // Higher DPI for high quality
+        dpi: qualityRadio && qualityRadio.value === 'high' ? 200 : 120, // Reduced DPI for faster processing
         format: 'jpg',
-        optimize: true
+        optimize: true,
+        maxPages: 50 // Limit pages for performance
     };
 }
 
@@ -588,9 +624,17 @@ async function saveMultipleResults(result, baseName) {
     }
 }
 
-async function saveImageResults(imagePaths, originalPdfPath) {
+async function saveImageResults(imagePaths, originalPdfPath, mode = 'individual') {
     try {
-        const savedPaths = await ipcRenderer.invoke('save-images', imagePaths, originalPdfPath);
+        let savedPaths = [];
+        
+        if (mode === 'folder') {
+            // Save all to a selected folder
+            savedPaths = await saveAllToFolder(imagePaths, originalPdfPath);
+        } else {
+            // Individual file save dialogs
+            savedPaths = await ipcRenderer.invoke('save-images', imagePaths, originalPdfPath);
+        }
         
         if (savedPaths.length > 0) {
             showSuccess(`${savedPaths.length} image(s) saved successfully!`);
@@ -618,6 +662,35 @@ async function saveImageResults(imagePaths, originalPdfPath) {
                 downloadLinks.appendChild(warningDiv);
             }
             
+            // Show success summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.innerHTML = `
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 3rem; color: #28a745; margin-bottom: 15px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="color: #155724; margin-bottom: 15px;">Images Saved Successfully!</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <div style="background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 2em; font-weight: bold; color: #667eea;">${savedPaths.length}</div>
+                            <div style="color: #666; font-size: 0.9em;">Files Saved</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">${mode === 'folder' ? 'Folder' : 'Individual'}</div>
+                            <div style="color: #666; font-size: 0.9em;">Save Mode</div>
+                        </div>
+                    </div>
+                    ${mode === 'folder' ? 
+                        `<button class="btn btn-primary" onclick="openImageLocation('${savedPaths[0].substring(0, savedPaths[0].lastIndexOf('/'))}')" style="margin-top: 10px;">
+                            <i class="fas fa-folder-open"></i> Open Folder
+                        </button>` : 
+                        `<p style="color: #155724; margin: 10px 0 0 0;">All files saved to individual locations</p>`
+                    }
+                </div>
+            `;
+            downloadLinks.appendChild(summaryDiv);
+            
+            // Show individual file details
             savedPaths.forEach((savedPath, index) => {
                 const downloadItem = document.createElement('div');
                 downloadItem.className = 'download-item';
@@ -631,13 +704,13 @@ async function saveImageResults(imagePaths, originalPdfPath) {
                             <i class="fas fa-${isActualImage ? 'image' : 'file-code'}"></i>
                         </div>
                         <div class="file-details">
-                            <h4>Saved: ${savedPath.split('/').pop()}</h4>
+                            <h4>${savedPath.split('/').pop()}</h4>
                             <p>${savedPath}</p>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="openImageLocation('${savedPath}')">
+                    <button class="btn btn-outline" onclick="openImageLocation('${savedPath}')">
                         <i class="fas fa-folder-open"></i>
-                        Open Location
+                        Show in Finder
                     </button>
                 `;
                 downloadLinks.appendChild(downloadItem);
@@ -649,6 +722,38 @@ async function saveImageResults(imagePaths, originalPdfPath) {
         }
     } catch (error) {
         showError(`Failed to save images: ${error.message}`);
+    }
+}
+
+async function saveAllToFolder(imagePaths, originalPdfPath) {
+    try {
+        // Select a folder first
+        const folderResult = await ipcRenderer.invoke('select-folder');
+        if (folderResult.canceled) {
+            return [];
+        }
+        
+        const folderPath = folderResult.filePaths[0];
+        const path = require('path');
+        const fs = require('fs');
+        const originalName = path.basename(originalPdfPath, path.extname(originalPdfPath));
+        const savedPaths = [];
+        
+        for (let i = 0; i < imagePaths.length; i++) {
+            const imagePath = imagePaths[i];
+            const extension = path.extname(imagePath);
+            const fileName = `${originalName}_page_${i + 1}${extension}`;
+            const outputPath = path.join(folderPath, fileName);
+            
+            // Copy the file
+            fs.copyFileSync(imagePath, outputPath);
+            savedPaths.push(outputPath);
+        }
+        
+        return savedPaths;
+    } catch (error) {
+        console.error('Error saving to folder:', error);
+        throw error;
     }
 }
 
@@ -793,13 +898,13 @@ async function saveAsZip() {
                         <i class="fas fa-check-circle"></i> ZIP Archive Created Successfully!
                     </h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                        <div><strong>File:</strong> ${result.zipPath.split('/').pop()}</div>
-                        <div><strong>Images:</strong> ${result.fileCount} files</div>
-                        <div><strong>Size:</strong> ${formatFileSize(result.totalBytes)}</div>
+                        <div><strong>File:</strong> ${result && result.zipPath ? result.zipPath.split('/').pop() : 'archive.zip'}</div>
+                        <div><strong>Images:</strong> ${result && result.fileCount ? result.fileCount : 0} files</div>
+                        <div><strong>Size:</strong> ${result && result.totalBytes ? formatFileSize(result.totalBytes) : 'Unknown'}</div>
                         <div><strong>Compression:</strong> Maximum</div>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="openImageLocation('${result.zipPath}')">
+                        <button class="btn btn-primary" onclick="openImageLocation('${result && result.zipPath ? result.zipPath : ''}')">
                             <i class="fas fa-folder-open"></i>
                             Open ZIP Location
                         </button>
@@ -830,8 +935,14 @@ async function saveAsZip() {
 
 async function autoCreateZipFromImages(imagePaths, originalPdfPath, mode = 'pages') {
     try {
+        // Validate inputs
         if (!imagePaths || imagePaths.length === 0) {
             showError('No images to compress');
+            return;
+        }
+        
+        if (!originalPdfPath || typeof originalPdfPath !== 'string') {
+            showError('Invalid PDF path provided');
             return;
         }
         
@@ -843,7 +954,12 @@ async function autoCreateZipFromImages(imagePaths, originalPdfPath, mode = 'page
         
         hideProgress();
         
-        if (result) {
+        if (result && result.success !== false) {
+            // Validate result structure
+            if (!result.zipPath) {
+                throw new Error('ZIP creation succeeded but no path returned');
+            }
+            
             // Show simple success message with ZIP details
             const resultsSection = document.getElementById('resultsSection');
             const downloadLinks = document.getElementById('downloadLinks');
@@ -880,10 +996,10 @@ async function autoCreateZipFromImages(imagePaths, originalPdfPath, mode = 'page
                     <div style="margin: 20px 0;">
                         <strong style="color: #155724;">📁 Saved as:</strong><br>
                         <code style="background: #f8f9fa; padding: 5px 10px; border-radius: 4px; color: #495057;">
-                            ${result.zipPath.split('/').pop()}
+                            ${result && result.zipPath ? result.zipPath.split('/').pop() : 'archive.zip'}
                         </code>
                     </div>
-                    <button class="btn btn-primary" onclick="openImageLocation('${result.zipPath}')" style="font-size: 1.1em; padding: 12px 24px;">
+                    <button class="btn btn-primary" onclick="openImageLocation('${result && result.zipPath ? result.zipPath : ''}')" style="font-size: 1.1em; padding: 12px 24px;">
                         <i class="fas fa-folder-open"></i>
                         Open ZIP File Location
                     </button>
@@ -904,9 +1020,21 @@ async function autoCreateZipFromImages(imagePaths, originalPdfPath, mode = 'page
 }
 
 function showZipContents() {
-    if (!window.currentImagePaths || !window.currentOriginalPath) return;
+    if (!window.currentImagePaths || !window.currentOriginalPath) {
+        console.error('Missing data for ZIP contents display');
+        return;
+    }
     
-    const originalName = window.currentOriginalPath.split('/').pop().replace(/\.[^/.]+$/, '');
+    // Safely get the original name with error handling
+    let originalName = 'unknown';
+    try {
+        if (window.currentOriginalPath && typeof window.currentOriginalPath === 'string') {
+            originalName = window.currentOriginalPath.split('/').pop().replace(/\.[^/.]+$/, '');
+        }
+    } catch (error) {
+        console.error('Error parsing original path:', error);
+        originalName = 'document';
+    }
     
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -958,8 +1086,79 @@ function previewImage(imagePath) {
     openImageLocation(imagePath);
 }
 
-function openImageLocation(imagePath) {
-    require('electron').shell.showItemInFolder(imagePath);
+async function openZipLocation(zipPath) {
+    try {
+        console.log('📂 Raw zipPath received:', zipPath, typeof zipPath);
+        
+        // Handle different types of input
+        let actualPath = zipPath;
+        if (typeof zipPath === 'object') {
+            if (zipPath && zipPath.path) {
+                actualPath = zipPath.path;
+            } else if (zipPath && zipPath.zipPath) {
+                actualPath = zipPath.zipPath;
+            } else {
+                throw new Error('Invalid ZIP path object');
+            }
+        }
+        
+        if (!actualPath || typeof actualPath !== 'string') {
+            showError('ZIP file path not available or invalid');
+            return;
+        }
+
+        console.log('📂 Opening folder containing ZIP:', actualPath);
+        
+        const result = await ipcRenderer.invoke('open-file-location', actualPath);
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to open folder');
+        }
+        
+        console.log('✅ Folder opened successfully');
+        
+    } catch (error) {
+        console.error('❌ Error opening folder:', error);
+        showError(`Failed to open folder: ${error.message}`);
+    }
+}
+
+// Update openImageLocation function
+async function openImageLocation(imagePath) {
+    try {
+        console.log('📂 Raw imagePath received:', imagePath, typeof imagePath);
+        
+        // Handle different types of input
+        let actualPath = imagePath;
+        if (typeof imagePath === 'object') {
+            if (imagePath && imagePath.path) {
+                actualPath = imagePath.path;
+            } else if (imagePath && imagePath.zipPath) {
+                actualPath = imagePath.zipPath;
+            } else {
+                throw new Error('Invalid image path object');
+            }
+        }
+        
+        if (!actualPath || typeof actualPath !== 'string') {
+            showError('Image path not available or invalid');
+            return;
+        }
+
+        console.log('📂 Opening folder containing image:', actualPath);
+        
+        const result = await ipcRenderer.invoke('open-file-location', actualPath);
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to open folder');
+        }
+        
+        console.log('✅ Folder opened successfully');
+        
+    } catch (error) {
+        console.error('❌ Error opening folder:', error);
+        showError(`Failed to open folder: ${error.message}`);
+    }
 }
 
 function showProgress(message) {
@@ -1091,7 +1290,7 @@ function showCompressionOptions() {
                     <div style="font-size: 0.9em; color: #666;">Images</div>
                 </div>
                 <div>
-                    <div style="font-size: 1.5em; font-weight: bold; color: #28a745;" id="estimatedSize">~50MB</div>
+                    <div style="font-size: 1.5em; font-weight: bold, color: #28a745;" id="estimatedSize">~50MB</div>
                     <div style="font-size: 0.9em; color: #666;">Est. Size</div>
                 </div>
                 <div>
@@ -1534,16 +1733,16 @@ async function showPdfToJpgPreview() {
             previewContainer.innerHTML = `
                 <div style="background: #e7f3ff; border: 1px solid #b8daff; border-radius: 8px; padding: 20px; margin-top: 15px;">
                     <h4 style="color: #004085; margin-bottom: 15px;">
-                        <i class="fas fa-info-circle"></i> Processing Preview
+                        <i class="fas fa-info-circle"></i> Page Selection & Preview
                     </h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                         <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
                             <div style="font-size: 2em; font-weight: bold; color: #667eea;">${pageCount}</div>
-                            <div style="color: #666; font-size: 0.9em;">PDF Pages</div>
+                            <div style="color: #666; font-size: 0.9em;">Total Pages</div>
                         </div>
                         <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
-                            <div style="font-size: 2em; font-weight: bold; color: #28a745;">${pageCount}</div>
-                            <div style="color: #666; font-size: 0.9em;">${actionText}</div>
+                            <div id="selectedPageCount" style="font-size: 2em; font-weight: bold; color: #28a745;">${pageCount}</div>
+                            <div style="color: #666; font-size: 0.9em;">Selected Pages</div>
                         </div>
                         <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
                             <div style="font-size: 1.2em; font-weight: bold; color: #fd7e14;">
@@ -1552,13 +1751,72 @@ async function showPdfToJpgPreview() {
                             <div style="color: #666; font-size: 0.9em;">Output Format</div>
                         </div>
                     </div>
+                    
+                    <!-- Page Selection Options -->
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h5 style="color: #856404; margin-bottom: 10px;">
+                            <i class="fas fa-list"></i> Select Pages to Convert
+                        </h5>
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="pageSelection" value="all" checked onchange="updatePageSelection()">
+                                <span>All Pages (1-${pageCount})</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="pageSelection" value="range" onchange="updatePageSelection()">
+                                <span>Page Range</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="pageSelection" value="specific" onchange="updatePageSelection()">
+                                <span>Specific Pages</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Range Selection -->
+                        <div id="rangeSelection" style="display: none; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span>From page:</span>
+                                <input type="number" id="startPage" min="1" max="${pageCount}" value="1" 
+                                       style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
+                                       onchange="updatePageSelection()">
+                                <span>to page:</span>
+                                <input type="number" id="endPage" min="1" max="${pageCount}" value="${pageCount}" 
+                                       style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
+                                       onchange="updatePageSelection()">
+                            </div>
+                        </div>
+                        
+                        <!-- Specific Pages Selection -->
+                        <div id="specificSelection" style="display: none; margin-bottom: 10px;">
+                            <div style="margin-bottom: 10px;">
+                                <input type="text" id="specificPages" placeholder="e.g., 1,3,5-8,10" 
+                                       style="width: 100%; max-width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                                       onchange="updatePageSelection()">
+                                <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                    Enter page numbers separated by commas. Use hyphens for ranges (e.g., 1,3,5-8,10)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Selection Buttons -->
+                        ${pageCount > 10 ? `
+                        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.85em;" 
+                                    onclick="setQuickSelection('odd')">Odd Pages</button>
+                            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.85em;" 
+                                    onclick="setQuickSelection('even')">Even Pages</button>
+                            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.85em;" 
+                                    onclick="setQuickSelection('first10')">First 10</button>
+                            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.85em;" 
+                                    onclick="setQuickSelection('last10')">Last 10</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
                     <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px;">
-                        <p style="margin: 0; color: #004085;">
-                            <strong>📋 What will happen:</strong> 
-                            ${pageCount === 1 ? 
-                                `This PDF has 1 page. It will be converted to 1 JPG file.` : 
-                                `This PDF has ${pageCount} pages. All ${pageCount} ${modeText}.`
-                            }
+                        <p id="selectionSummary" style="margin: 0; color: #004085;">
+                            <strong>📋 Selection:</strong> 
+                            All ${pageCount} ${modeText}.
                             ${pageCount > 5 ? 
                                 ' Since there are more than 5 files, they will be automatically compressed into a ZIP archive.' : 
                                 ' You can save each file individually.'
@@ -1567,6 +1825,9 @@ async function showPdfToJpgPreview() {
                     </div>
                 </div>
             `;
+            
+            // Initialize page selection - all pages selected by default
+            window.selectedPages = Array.from({length: pageCount}, (_, i) => i + 1);
         }
     } catch (error) {
         console.log('Could not show preview:', error);
@@ -1639,4 +1900,130 @@ function generateSplitFilename(originalFile) {
     
     const baseName = originalFile.name.replace(/\.[^/.]+$/, ''); // Remove extension
     return `${baseName}_split`;
+}
+
+// Page selection functions
+function updatePageSelection() {
+    const selectionType = document.querySelector('input[name="pageSelection"]:checked')?.value;
+    const rangeDiv = document.getElementById('rangeSelection');
+    const specificDiv = document.getElementById('specificSelection');
+    const selectedCountDiv = document.getElementById('selectedPageCount');
+    const summaryDiv = document.getElementById('selectionSummary');
+    
+    if (!selectionType) return;
+    
+    // Show/hide input sections
+    rangeDiv.style.display = selectionType === 'range' ? 'block' : 'none';
+    specificDiv.style.display = selectionType === 'specific' ? 'block' : 'none';
+    
+    // Get total page count
+    const totalPages = parseInt(document.querySelector('#pdfPreview [style*="font-size: 2em"]')?.textContent) || 0;
+    
+    // Calculate selected pages
+    let selectedPages = [];
+    let selectedCount = 0;
+    
+    switch(selectionType) {
+        case 'all':
+            selectedPages = Array.from({length: totalPages}, (_, i) => i + 1);
+            selectedCount = totalPages;
+            break;
+            
+        case 'range':
+            const startPage = parseInt(document.getElementById('startPage')?.value) || 1;
+            const endPage = parseInt(document.getElementById('endPage')?.value) || totalPages;
+            selectedPages = Array.from({length: Math.max(0, endPage - startPage + 1)}, (_, i) => startPage + i);
+            selectedCount = selectedPages.length;
+            break;
+            
+        case 'specific':
+            const specificInput = document.getElementById('specificPages')?.value || '';
+            selectedPages = parsePageNumbers(specificInput, totalPages);
+            selectedCount = selectedPages.length;
+            break;
+    }
+    
+    // Update display
+    if (selectedCountDiv) {
+        selectedCountDiv.textContent = selectedCount;
+    }
+    
+    // Update summary
+    if (summaryDiv) {
+        let summaryText = '';
+        if (selectedCount === 0) {
+            summaryText = `<strong>⚠️ No pages selected.</strong> Please select at least one page to convert.`;
+        } else if (selectedCount === 1) {
+            summaryText = `<strong>📋 Selection:</strong> 1 page will be converted to JPG.`;
+        } else {
+            summaryText = `<strong>📋 Selection:</strong> ${selectedCount} pages will be converted to JPG files.`;
+            if (selectedCount > 5) {
+                summaryText += ' They will be automatically compressed into a ZIP archive.';
+            }
+        }
+        summaryDiv.innerHTML = summaryText;
+    }
+    
+    // Store selection for processing
+    window.selectedPages = selectedPages;
+}
+
+function parsePageNumbers(input, maxPage) {
+    const pages = new Set();
+    const parts = input.split(',');
+    
+    for (const part of parts) {
+        const trimmed = part.trim();
+        if (!trimmed) continue;
+        
+        if (trimmed.includes('-')) {
+            // Range like "5-8"
+            const [start, end] = trimmed.split('-').map(s => parseInt(s.trim()));
+            if (start && end && start <= end && start >= 1 && end <= maxPage) {
+                for (let i = start; i <= end; i++) {
+                    pages.add(i);
+                }
+            }
+        } else {
+            // Single page like "3"
+            const pageNum = parseInt(trimmed);
+            if (pageNum && pageNum >= 1 && pageNum <= maxPage) {
+                pages.add(pageNum);
+            }
+        }
+    }
+    
+    return Array.from(pages).sort((a, b) => a - b);
+}
+
+function setQuickSelection(type) {
+    const totalPages = parseInt(document.querySelector('#pdfPreview [style*="font-size: 2em"]')?.textContent) || 0;
+    const specificInput = document.getElementById('specificPages');
+    
+    if (!specificInput) return;
+    
+    let selection = '';
+    
+    switch(type) {
+        case 'odd':
+            selection = Array.from({length: Math.ceil(totalPages/2)}, (_, i) => (i * 2) + 1)
+                .filter(p => p <= totalPages).join(',');
+            break;
+        case 'even':
+            selection = Array.from({length: Math.floor(totalPages/2)}, (_, i) => (i + 1) * 2)
+                .filter(p => p <= totalPages).join(',');
+            break;
+        case 'first10':
+            selection = Array.from({length: Math.min(10, totalPages)}, (_, i) => i + 1).join(',');
+            break;
+        case 'last10':
+            const start = Math.max(1, totalPages - 9);
+            selection = Array.from({length: totalPages - start + 1}, (_, i) => start + i).join(',');
+            break;
+    }
+    
+    // Set to specific selection mode
+    document.querySelector('input[name="pageSelection"][value="specific"]').checked = true;
+    specificInput.value = selection;
+    updatePageSelection();
 }
